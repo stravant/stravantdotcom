@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="main.css">
+
+    <title>Mark Langen's Home Page</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation"><a href="index.html">Home</a></li>
+                    <li role="presentation" class="active"><a href="#">Projects</a></li>
+                    <li role="presentation"><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+            <span id="nav-title">
+                <img id="nav-st" src="navbar_st_small.png">
+                <h3>Mark&nbsp;Langen's&nbsp;Home&nbsp;Page</h3>
+            </span>
+        </div>
+
+        <p style="text-align: center; margin-top: 1rem;"><i>This page details some of the more interesting stuff I've done over the years and links related code / projects
+            that you may find interesting.</i></p>
+
+        <h3>Android Apps</h3>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title">Forest Floor Recovery Index App</h4>
+                        <h4 class="card-date">Jan-Mar 2017</h4>
+                        <div class="card-content">
+                            <p>The Carbon Accounting Group at Natural Resources Canada was publishing a paper on measuring
+                                the recovery of forest floors after disturbances. They wanted to create a companion app
+                                for the paper to more easily apply the techniques presented in the paper in the field, and
+                                I took on the job. The app needed to:
+                            </p>
+                            <ul>
+                                <li>Present the example images and descriptions from the paper in a quickly accessible
+                                    manner so that someone working in the field can use them as a reference.
+                                </li>
+                                <li>Provide a data entry interface to allow collection of the data required to apply the
+                                    techniques described in the paper, including recording pictures and measurements of
+                                    samples taken in the field.
+                                </li>
+                                <li>Provide export functionality to export the collected data in commonly used formats
+                                    for further processing and aggregation. 
+                                </li>
+                            </ul> 
+                            <p>I completed the app in March 2017 and will update with a link to it and the paper once 
+                                they are made available to the public.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title">COMTESA Revival</h4>
+                        <h4 class="card-date">Mar 2017</h4>
+                        <div class="card-content">
+                            <p>COMTESA is a taxonomic classification program 
+                                "<b>COM</b>puter <b>T</b>axonomy and <b>E</b>cology of <b>S</b>oil <b>A</b>nimals"
+                                <a href="https://cfs.nrcan.gc.ca/publications?id=35541">(accompanying paper)</a> written using the
+                                Hypercard RAD platform for classic 1980's era Macintosh systems.
+                            </p>
+                            <p>The original developers of COMTESA wanted to revive the software and make use of it again.
+                                Despite being a fairly old piece of software, it contains a lot of valuable information, 
+                                including hundreds of hand drawn taxonomic diagrams. However Hypercard is a long dead software, 
+                                and its associated file format is complex and poorly documented. 
+                            </p>
+                            <p>I was tasked with evaluating reviving the software in some way was possible, and doing a
+                                conversion to some more modern format if possible.
+                            </p>
+                            <ol>
+                                <li>The first step of simply getting a copy of the program to work with was not so simple. The
+                                    only known extant copy of the program was on an old SCSI hard drive in one of the original
+                                    developer's basements. We set up a ~1990 Macintosh system from storage to read it and move the
+                                    files onto 3.5" floppy disk than we could then read from a Modern system using a USB
+                                    floppy disk reader.
+                                </li>
+                                <li>Once we had the original Hypercard stack files, I tried using a couple of commercial programs that
+                                    claimed to have some Hypercard stack import functionality on them. Unfortunately, neither
+                                    program was able to read the files.
+                                </li>
+                                <li>I then looked at some dated open source library code for decoding the highly complex
+                                    compressed stack files (A lot of the complexity stemming from the need of the system to
+                                    effeciently operate on stacks spanning multiple floppy disks) into a more understandable 
+                                    XML format. Unfortunately, that library also failed to decode the files. 
+                                </li>
+                                <li>At that point, I took a deep dive into the library code and <a href="hypercard_format.txt">
+                                    spotty reverse-engineered
+                                    specs on the stack file format</a>, which has no official documentation. I debugged what
+                                    exactly was going wrong and in the process restructured some of the library to work better
+                                    for our needs. This took quite some effort, as the <a href="http://fileformats.archiveteam.org/wiki/WOBA">
+                                    so called "Wrath of Bill Atkinson"</a> format used for encoding the images is piece of work.
+                                </li>
+                                <li>Once I had the converter working, we now had a workable copy of the data about the 
+                                    application to use. I developed an Android app emulator for the stack file format, including
+                                    its internal scripting language, using the converted XML stacks as input. This was not
+                                    too much work as I only implemented the features of Hypercard actually used by the
+                                    COMTESA stacks, and COMTESA only used the simpler core features of Hypercard.
+                                </li>
+                                <li>I also developed a Javascript/HTML version of the emulator, so that COMTESA could be served
+                                    as a website and/or browser app.
+                                </li> 
+                            </ol>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Roblox Projects</h3>
+        <p>Roblox is a building, game creation, and social networking platform published by Roblox Corporation
+            located in San Mateo, California. Building games on Roblox is what first got me into programming 8 years
+            ago back when it was only a small startup.
+        <p>Over the years I created quite a few influential games on the platform, and later on worked
+            for Roblox. I did some contract work for them while I was still in high school, and then did two summer 
+            internships on site at their San Mateo office while in university. Though I don't do 
+            much on the platform at the moment, 
+            here are couple of interesting somewhat recent things that I have done:
+        </p>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title"><a href="https://www.roblox.com/games/411044268/Magic-the-Gathering-Client">Trading Card Game</a></h4>
+                        <h4 class="card-date">Summer 2016</h4>
+                        <div class="card-content">
+                            <p>In addition to my work on XMage, I have implemented a full clone of Magic the Gathering of my own on the Roblox platform.
+                            </p>
+                            <p>It includes full rules enforcement, card rendering, deck editor, matchmaking, etc.
+                                It also has a robust client-server architecture which minimizes round trips to
+                                the server for that snappy feel, but still hides any private information so that
+                                even a compromised client would not be able to know information such as what
+                                cards the opponent has in their hand.
+                            </p> 
+                            <p>I never got around to adding trading and statistics for players or promoting it
+                                into a popular game on the platform, but it's basically a full engine and I may 
+                                pick it up again at some point in the future.
+                            </p>
+                            <p>Total project size is about 30,000 lines of Lua scripts, in addition to some Python tools that I used locally
+                                for sprite sheet packing and other tasks.
+                            </p>
+                            <a href="cardgame_deck.png"><img src="cardgame_deck_small.png" style="width: 49%;"></a>
+                            <a href="cardgame_gameplay.png"><img src="cardgame_gameplay_small.png" style="width: 49%;"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title">Assorted Roblox Building Plugins</h4>
+                        <h4 class="card-date">2014 - 2015</h4>
+                        <div class="card-content">
+                           <p>I've published many popluar building plugins on the Roblox platform, the most popular one having
+                            more than 40,000 installs. The core tools 
+                            provided by Roblox in their IDE work very well for common cases and support 
+                            3D-modeling in ways that are easily usable by non-skilled users, as is necessary given
+                            that the userbase of the program is mostly teenagers. For more advanced tasks, skilled users
+                            turn to plugins like the ones that I have made. Here are a couple of interesting ones:</p>
+                            <ul>
+                                <li> 
+                                    <a href="https://www.roblox.com/library/217792838/Stravant-Model-Reflect">Model Reflect</a> (12,000 installs) &mdash; 
+                                    A plugin to reflect a model over a given axis. That would seem to be easy, if you were
+                                    working with a vertex/mesh based system, however that is not how Roblox works. Roblox is
+                                    based on "virtual Lego", and models are built out of Lego like parts. When you have complex or
+                                    sloped parts, with textures applied to them etc, and you can't simply reflect their verticies or
+                                    apply a reflection matrix, it is surprisingly non-obvious how to properly do the reflection.
+                                </li>
+                                <li> 
+                                    <a href="https://www.roblox.com/library/165687726/Stravant-GapFill-Extrude">Gap Fill</a> (40,000 installs) &mdash; 
+                                    Again, since we're talking about a platfrom where you're expected to build using Lego-like parts
+                                    rather than meshes, this brings up some difficulties. For instance, if you have two parts sitting
+                                    at arbitrary rotations in space, and you want to add new parts to "fill in the gap"
+                                    between them, it would be fairly arduous to do by hand and there may be artifacts because
+                                    you haven't placed the parts quite right. This plugin solves that problem by automagically generating
+                                    the filling given selected parts.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>XMage Project Work</h3>
+        <p>XMage is an open source project dedicated to producing a platform where players can play the 
+            <a href="https://en.wikipedia.org/wiki/Magic:_The_Gathering">Magic the Gathering trading card game</a> 
+            against an AI opponent or online against other people with 
+            full rules enforcement. See the <a href="http://xmage.de/">project home page</a>
+            for a current distribution of the software, or 
+            <a href="http://github.com/magefree/mage">view / download the source code on Github</a>.
+        </p>
+        <p>I have made quite a few contributions to the project and currently maintain the card rendering code.
+            These are a couple of the larger contributions I've made:
+        </p>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title">Vector Graphics Card Renderer</h4>
+                        <h4 class="card-date">Sept 2016</h4>
+                        <div class="card-content">
+                            <img src="helix_old.png" style="float: right; margin-left: 2px;" alt="Old raster image" title="Old raster image">
+                            <p>For a long time XMage had simply used plain raster images to display cards,                          
+                                sourced from scans of
+                                the real paper versions of the cards. This was not ideal, as the most important information on the
+                                cards may not be very readable with just a scaled down image of a scan. Also, many cards in the game
+                                change other cards, and the static image scans will not reflect those changes even though the
+                                game engine is aware of them. 
+                            </p>
+                            <img src="helix_new.png" style="float: left; margin: 2px;" alt="New vector render" title="New vector render">
+                            <p>
+                                To improve the situation I developed a vector graphics based renderer to render the cards
+                                based on the characteristics that the game engine knew about them. It also dynamically
+                                increases the size of some parts of the card at small sizes. This provides clear readable
+                                text even when there are a lot of cards on the screen at once and each is quite small.
+                            </p>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title">Drag &amp; Drop Deck Editor</h4>
+                        <h4 class="card-date">Nov 2016</h4>
+                        <div class="card-content">
+                            <p>The deck editor is the part of XMage that allows you to choose which cards you want to play with,
+                                how many of them, what versions of them, etc. Historically it was a pain-point in the program because
+                                making a quality deck editor that is easy to use takes a lot of UI dirtywork that not many people
+                                want to do.
+                            </p>
+                            <p>I created a full drag and drop based deck editor that allows you to box-select, ctrl/shift select, etc
+                                cards in the editor, and then drag / drop the selection in a dynamic grid of rows / columns. I also
+                                include show / hide functionality and many other extras.
+                            </p>
+                            <a href="editor_rows.png"><img src="editor_rows.png" style="width: 49%;"></a>
+                            <a href="drag_and_drop.png"><img src="drag_and_drop.png" style="width: 49%;"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Miscellaneous Stuff</h3>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title"><a href="https://github.com/stravant/lua-minify">Lua Minifier Tools</a></h4>
+                        <h4 class="card-date"></h4>
+                        <div class="card-content">
+                            <a href="https://github.com/stravant/LuaMinify">An older version of the library can also be found here</a>
+                            <p>I have written some minification tools for the Lua scripting language. At the time I first wrote the
+                                original version of the tool there was no Lua minifier available, so I created one.
+                            </p>
+
+                        <p><a href="https://github.com/stravant/lua-minify">The current version of the tool</a> has full semantic
+                            / scope awareness and tries to optimize its choice of which variables get minified to one character
+                            variable names in order to squeeze down the code size. It also does some tricks like restructuring 
+                            assignment statements / where variables are declared in order to reduce necessary whitespace if 
+                            those changes can provably be made without changing the program's meaning.
+                        </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title"><a href="https://github.com/stravant/rbx-fmt">Roblox Binary File Format C Library</a></h4>
+                        <h4 class="card-date"></h4>
+                        <div class="card-content">
+                            <p>Roblox uses a proprietary compressed binary file format for its content. I wrote an efficient
+                                decoding library for that format in C, so that other programs can work with and export to
+                                Roblox place/model files.
+                            </p>
+                            <p>I modeled the library off of similar libraries for block-based file formats like libpng, trying
+                                to avoid any unnecessary dynamic memory allocation.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Current Projects</h3>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title">Getting Hired</h4>
+                        <h4 class="card-date"></h4>
+                        <div class="card-content">
+                            <p> I'm looking for work! If you have an opportunity in Edmonton Alberta and
+                                are interested please <a href="contact.html">contact me</a>. Resume and contact info are available
+                                on that contact page. 
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title">XMage Game View V2</h4>
+                        <h4 class="card-date"></h4>
+                        <div class="card-content">
+                            <p>I'm currently working on creating a new better game view for XMage. The existing
+                                one had it's last significant changes over 5 years ago, and it could use a lot
+                                of improvement. Main goals:
+                            </p>
+                            <ul>
+                                <li>Make all information windows dockable. Currently you often have a mess of
+                                    internal windows open in the program with various information that you need.
+                                    Making them dockable when desired would be help things immensely. 
+                                </li>
+                                <li>Generally improve the layout to waste less space. The current layout 
+                                    has quite a lot of wasted space that could be used better. For example,
+                                    by turning some of the elements that are currently always shown into
+                                    floating elements overtop of other UI that are not shown when not needed, 
+                                    and moving to a slightly more complex layout to not waste space.
+                                </li>
+                                <li>Make the code more modular. Right now the main game view is a fairly horrible
+                                    5000 line god class. No matter how it's done, it has to be a fairly large
+                                    class, but it can still be much more modular and smaller than it currently is.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>&copy;2017 Mark Langen</p>
+        </footer>
+    </div>
+
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+</body>
+</html>

@@ -1,0 +1,826 @@
+THE DEFINITIVE GUIDE TO THE HYPERCARD STACK FILE FORMAT
+FOR HYPERCARD 2.0 TO 2.4.1
+By Rebecca Bettencourt
+With special thanks to Tyler Vano, Michael Nichols, and Bill Atkinson
+UPDATED DECEMBER 21, 2011
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+LEGAL DISCLAIMER
+
+This information is being provided in the hopes that it will be found useful by developers.
+We have done exhaustive research to determine any possible infringements on Apple, Inc.'s
+valuable intellectual property rights. We have been able to find none. THE ORIGINAL AUTHORS
+WILL IMMEDIATELY COMPLY WITH ANY LEGAL REQUEST FROM APPLE, INC. CONCERNING THIS INFORMATION.
+
+We value and respect intellectual property rights and spent many hours discussing the possible
+ramifications of this publication. After much consideration, we have to decided to publish it
+in good faith, and believe that we have the right under Freedom of Expression. If there is
+something we missed in our research, let us know and we will immediately remove the offending
+information from publication.
+
+BY USING THIS INFORMATION, YOU AGREE TO HOLD THE AFOREMENTIONED DEVELOPERS AND THE ORIGINAL
+AUTHORS HARMLESS FOR ANY DAMAGES CAUSED, DIRECTLY OR INDIRECTLY, BY YOUR USE OF THIS INFORMATION.
+THIS INCLUDES BUT IS NOT LIMITED TO, LOSS OF DATA, LOSS OF HEALTH, LOSS OF WORK, OR ANY LEGAL
+ACTIONS TAKEN BY THIRD PARTIES. THE ORIGINAL AUTHORS EXPRESSLY DISCLAIM ANY WARRANTY, IMPLIED
+OR OTHERWISE, AS TO THE VALIDITY OF THIS INFORMATION, OR ITS FITNESS FOR A PARTICULAR PURPOSE.
+YOU ARE RESPONSIBLE FOR YOUR OWN ACTIONS.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+Format Notes
+
+This document uses the following primitive data types to describe binary data structures:
+
+byte - an 8-bit unsigned integer or bit field
+short - a 16-bit signed integer or bit field
+int - a 32-bit signed integer or bit field
+long - a 64-bit signed integer or bit field
+char * - a null-terminated string using the MacRoman encoding (see note)
+<type>[] - an unbounded array of a specified type
+<type>[<number>] - a fixed-size array of a specified type
+short align - zero or one bytes to align the data to an even offset
+
+A data type other than the ones listed above is likely to be a substructure. The description
+of the substructure follows at the next indentation level.
+
+For any field, notes such as possible values for the field, the meanings of flag bits, the
+descriptions of binary data substructures, or comments for more complex fields may follow
+at the next indentation level.
+
+All integers and bit fields are big-endian. All strings are in the MacRoman text encoding.
+If a string appears at the end of a structure or substructure, it may not be terminated with
+a null byte. If a string appears in the middle of a structure or substructure, it must be
+terminated.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The general format of a HyperCard stack is as follows:
+
+block[] blocks;
+	int blockSize; // size of this block including this header
+	int blockType; // a four-character constant identifying the block content
+		'STAK' - stack header
+		'MAST' - master reference object
+		'LIST' - card index list
+		'PAGE' - card index
+		'BKGD' - background
+		'CARD' - card
+		'BMAP' - card or background image
+		'FREE' - free space removed by Compact Stack
+		'STBL' - style table
+		'FTBL' - font table
+		'PRNT' - print settings and template index
+		'PRST' - Page Setup settings
+		'PRFT' - report template
+		'TAIL' - tail object (the "Nu är det slut…" at the end of the file)
+	int blockID;
+	int filler; // always zero
+	byte[blockSize-16] data;
+
+The STAK, MAST, LIST, STBL, FTBL, PRNT, PRST, and TAIL blocks only appear once.
+The PAGE, BKGD, CARD, BMAP, FREE, and PRFT blocks can appear multiple times.
+Of course, there will be as many BKGD blocks as there are backgrounds, as many
+CARD blocks as there are cards, and as many PRFT blocks as there are report templates.
+
+The STAK, MAST, LIST, and PAGE blocks must appear first, in that order.
+The TAIL block must appear last. All other blocks may appear in any order.
+The order of the blocks is insignificant.
+
+(Although the Project 11 code used the order of the CARD blocks to determine card order,
+this is wrong. The Project 11 code was written long before the structures of the LIST
+and PAGE blocks were discovered. It is the LIST and PAGE blocks that determine card order.
+Use the LIST block to iterate through the PAGE blocks in the order specified in the
+LIST block, then use the LIST and PAGE blocks to iterate through the card ids in the
+order specified in each PAGE block.)
+
+This general format applies to any HyperCard stack, regardless of which version of HyperCard
+created it. However, the formats of the individual block types apply only to stacks created
+with HyperCard 2.0 or later. We have not done any investigation into the format of stacks
+created with earlier versions of HyperCard.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a STAK block is as follows:
+
+int stackSize; // size of this block including this header
+int stackType; // 'STAK'
+int stackId; // always -1
+int filler; // always zero
+int format;
+	0 - not a HyperCard stack
+	1-7 - pre-release HyperCard 1.x
+	8 - HyperCard 1.x
+	9 - pre-release HyperCard 2.x
+	10 - HyperCard 2.x
+int totalSize; // total size of the entire data fork
+int stackSize; // size of the STAK block
+int something; // usually zero
+int something; // ranges from zero to 3
+int bkgndCount; // number of BKGD blocks
+int firstBkgndId; // ID number of the first BKGD block
+int cardCount; // number of CARD blocks
+int firstCardId; // ID number of the first CARD block
+int listId; // ID number of the LIST block
+int freeCount; // number of FREE blocks
+int freeSize; // total length of all FREE blocks; the freeSize property of a stack
+int printId; // ID number of the PRNT block
+int password; // password hash for the Protect Stack command; not the same as the ask password hash
+short userLevel; // maximum userLevel allowed by the stack
+short something; // usually zero
+short flags;
+	bit 15 - cantModify
+	bit 14 - cantDelete
+	bit 13 - privateAccess
+	bit 12 - always 1
+	bit 11 - cantAbort
+	bit 10 - cantPeek
+short something; // usually zero
+int something; // usually zero
+int something; // usually zero
+int something; // usually zero
+int something; // usually zero
+int createVersion; // version of HyperCard that first created the stack; the Home stack was created with 1.2.2d19!
+int compactVersion; // version of HyperCard that last compacted the stack
+int modifyVersion; // version of HyperCard that last modified the stack
+int openVersion; // version of HyperCard that last opened the stack
+int checksum; // checksum of the STAK block
+	To calculate a checksum, treat the entire STAK block as an int[] and take the sum.
+	If this field is correct, the sum will be zero.
+	To calculate the correct value of this field, set it to zero and subtract the checksum from 1.
+int something; // usually zero
+short windowTop; // the top of the card window
+short windowLeft; // the left of the card window
+short windowBottom; // the bottom of the card window
+short windowRight; // the right of the card window
+short screenTop; // the top of the screenRect
+short screenLeft; // the left of the screenRect
+short screenBottom; // the bottom of the screenRect
+short screenRight; // the right of the screenRect
+short scrollY; // the Y coordinate of the scroll
+short scrollX; // the X coordinate of the scroll
+short something; // usually zero
+short something; // usually zero
+// - - - skip to offset 0x01B0 - - - // The skipped data is zeroes or garbage.
+int fontTableId; // ID number of the FTBL block
+int styleTableId; // ID number of the STBL block
+short height; // height of a card
+short width; // width of a card
+short something; // usually zero
+short something; // usually zero
+// - - - skip to offset 0x02C0 - - - // The skipped data is zeroes or garbage.
+long[40] patterns; // the 40 patterns that appear in the pattern palette, each of which is an 8-byte 8x8x1 bitmap
+// - - - skip to offset 0x0600 - - - // The skipped data is zeroes or garbage.
+char * stackScript; // the stack script
+	If this starts with something other than a null, the stack script is a HyperTalk script.
+	If this starts with a null, the stack script is a compiled script for an OSA scripting component.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a MAST block is as follows:
+
+int masterSize; // size of the block including this header
+int masterType; // 'MAST'
+int masterId; // always -1
+int filler; // always zero
+int something; // usually zero
+int something; // usually zero
+int something; // usually zero
+int something; // usually zero
+int[(masterSize-32)/4] addressInfo;
+	Each non-zero integer in this array corresponds to a block in the file,
+	NOT including STAK, MAST, FREE, or TAIL blocks. The most significant
+	24 bits of the integer gives the offset to the block from the start of
+	the stack file, in multiples of 32 bytes. The least significant 8 bits
+	of the integer gives the least significant 8 bits of the block's ID number.
+	For example, a MAST entry of 0x00141B5E corresponds to a block at 0x28360
+	(0x00141B << 5) with ID number 0x??????5E.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a LIST block is as follows:
+
+int listSize; // size of the block including this header
+int listType; // 'LIST'
+int listId;
+int filler; // always zero
+int pageCount; // number of PAGE blocks
+int pageSize; // size of a PAGE block; usually 2048 bytes
+int pageEntryTotal; // total number of entries in all PAGE blocks; should equal number of cards
+short pageEntrySize; // length of an entry in a PAGE block
+short something; // usually 2
+short something;
+short something;
+short something;
+short something;
+int pageEntryTotal; // total number of entries in all PAGE blocks; should equal number of cards
+int something; // usually zero
+page[pageCount] pages;
+	int pageId; // ID number of a PAGE block
+	short pageEntryCount; // number of entries in that PAGE block
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a PAGE block is as follows:
+
+int pageSize; // size of the block including this header
+int pageType; // 'PAGE'
+int pageId;
+int filler; // always zero
+int listId; // ID number of the LIST block
+int something;
+pageEntry[pageEntryCount] pageEntries; // pageEntryCount taken from LIST block
+	int cardId; // ID number of the corresponding CARD
+	byte[pageEntrySize-4] something; // pageEntrySize taken from LIST block
+		Bit 4 of the first byte indicates whether the card is marked.
+		The rest of this data is unknown, but suspected to be search indexing data.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a BKGD block is as follows:
+
+int bkgndSize; // size of this block including this header
+int bkgndType; // 'BKGD'
+int bkgndId;
+int filler; // always zero
+int bitmapId; // ID number of the corresponding BMAP block
+short flags;
+	bit 14 - cantDelete
+	bit 13 - not showPict
+	bit 11 - dontSearch
+short something;
+short something;
+short something;
+int nextBkgndId; // ID number of the next background
+int prevBkgndId; // ID number of the previous background
+short partCount; // number of parts (buttons and fields) on this background
+short something; // number of something; sometimes number of parts, sometimes something else, sometimes a huge number
+short something;
+short something;
+short partContentCount; // number of part contents
+short something;
+short something;
+part[partCount] parts;
+	short size; // size of the part, including this header
+	short partId; // ID number of the part
+	byte partType;
+		1 - button
+		2 - field
+	byte flags;
+		bit 7 - not visible
+		bit 5 - dontWrap
+		bit 4 - dontSearch
+		bit 3 - sharedText
+		bit 2 - not fixedLineHeight
+		bit 1 - autoTab
+		bit 0 - not enabled or lockText
+	short top; // top of the part's rectangle
+	short left; // left of the part's rectangle
+	short bottom; // bottom of the part's rectangle
+	short right; // right of the part's rectangle
+	byte flags;
+		bit 7 - showName or autoSelect
+		bit 6 - hilite or showLines
+		bit 5 - autoHilite or wideMargins
+		bit 4 - not sharedHilite or multipleLines
+		bits 3-0 - family
+	byte style; // HyperCard only looks at the least significant 4 bits of this field
+		0 - transparent
+		1 - opaque
+		2 - rectangle
+		3 - roundRect
+		4 - shadow
+		5 - checkBox
+		6 - radioButton
+		7 - scrolling
+		8 - standard
+		9 - default
+		10 - oval
+		11 - popup
+		12-15 - undefined
+	short titleWidthOrLastSelectedLine;
+	short iconIdOrFirstSelectedLine;
+	short textAlign;
+		0 - left
+		1 - center
+		-1 - right
+	short textFont; // use the FTBL block to translate this to a font name
+	short textSize;
+	byte textStyle;
+		bit 7 - group
+		bit 6 - extend
+		bit 5 - condense
+		bit 4 - shadow
+		bit 3 - outline
+		bit 2 - underline
+		bit 1 - italic
+		bit 0 - bold
+	byte filler; // always zero
+	short textHeight;
+	char * name;
+	byte partScriptStart; // always zero
+	char * partScript; // the button or field script
+		If this starts with something other than a null, the button or field script is a HyperTalk script.
+		If this starts with a null, the button or field script is a compiled script for an OSA scripting component.
+	short align;
+partContent[partContentCount] partContents;
+	short partId; // this is positive for a background part, or negative for a card part
+	short contentSize; // not including the partId or contentSize fields
+	partStyleData contentFormatting;
+		This is either:
+			byte plainTextMarker; // always zero
+		Or:
+			short formattingLength; // including formattingLength; highest bit is always set
+			formattingChange[] formattingChanges;
+				short textPosition; // position in the text where a formatting change occurs
+				short styleId; // use the STBL block to translate this to a text style
+	char * contents;
+		For a card button or a background button with sharedHilite = true, this is the button contents.
+		For a background button with sharedHilite = false, this is "1" when hilite = true and empty otherwise.
+	word align;
+char * bkgndName; // the name of the background
+char * bkgndScript; // the background script
+	If this starts with something other than a null, the background script is a HyperTalk script.
+	If this starts with a null, the background script is a compiled script for an OSA scripting component.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a CARD block is as follows:
+
+int cardSize; // size of this block including this header
+int cardType; // 'CARD'
+int cardId;
+int filler; // always zero
+int bitmapId; // ID number of the corresponding BMAP block
+short flags;
+	bit 14 - cantDelete
+	bit 13 - not showPict
+	bit 11 - dontSearch
+short something;
+int something; // usually zero
+int something; // usually zero
+int pageId; // ID number of the PAGE block containing this card's index
+int bkgndId; // ID number of the card's background
+short partCount; // number of parts (buttons and fields) on this card
+short something; // number of something; sometimes number of parts, sometimes something else, sometimes a huge number
+short something;
+short something;
+short partContentCount; // number of part contents
+short something;
+short something;
+part[partCount] parts;
+	short size; // size of the part, including this header
+	short partId; // ID number of the part
+	byte partType;
+		1 - button
+		2 - field
+	byte flags;
+		bit 7 - not visible
+		bit 5 - dontWrap
+		bit 4 - dontSearch
+		bit 3 - sharedText
+		bit 2 - not fixedLineHeight
+		bit 1 - autoTab
+		bit 0 - not enabled or lockText
+	short top; // top of the part's rectangle
+	short left; // left of the part's rectangle
+	short bottom; // bottom of the part's rectangle
+	short right; // right of the part's rectangle
+	byte flags;
+		bit 7 - showName or autoSelect
+		bit 6 - hilite or showLines
+		bit 5 - autoHilite or wideMargins
+		bit 4 - not sharedHilite or multipleLines
+		bits 3-0 - family
+	byte style; // HyperCard only looks at the least significant 4 bits of this field
+		0 - transparent
+		1 - opaque
+		2 - rectangle
+		3 - roundRect
+		4 - shadow
+		5 - checkBox
+		6 - radioButton
+		7 - scrolling
+		8 - standard
+		9 - default
+		10 - oval
+		11 - popup
+		12-15 - undefined
+	short titleWidthOrLastSelectedLine;
+	short iconIdOrFirstSelectedLine;
+	short textAlign;
+		0 - left
+		1 - center
+		-1 - right
+	short textFont; // use the FTBL block to translate this to a font name
+	short textSize;
+	byte textStyle;
+		bit 7 - group
+		bit 6 - extend
+		bit 5 - condense
+		bit 4 - shadow
+		bit 3 - outline
+		bit 2 - underline
+		bit 1 - italic
+		bit 0 - bold
+	byte filler; // always zero
+	short textHeight;
+	char * name;
+	byte partScriptStart; // always zero
+	char * partScript; // the button or field script
+		If this starts with something other than a null, the button or field script is a HyperTalk script.
+		If this starts with a null, the button or field script is a compiled script for an OSA scripting component.
+	short align;
+partContent[partContentCount] partContents;
+	short partId; // this is positive for a background part, or negative for a card part
+	short contentSize; // not including the partId or contentSize fields
+	partStyleData contentFormatting;
+		This is either:
+			byte plainTextMarker; // always zero
+		Or:
+			short formattingLength; // including formattingLength; highest bit is always set
+			formattingChange[] formattingChanges;
+				short textPosition; // position in the text where a formatting change occurs
+				short styleId; // use the STBL block to translate this to a text style
+	char * contents;
+		For a card button or a background button with sharedHilite = true, this is the button contents.
+		For a background button with sharedHilite = false, this is "1" when hilite = true and empty otherwise.
+	word align;
+char * cardName; // the name of the card
+char * cardScript; // the card script
+	If this starts with something other than a null, the card script is a HyperTalk script.
+	If this starts with a null, the card script is a compiled script for an OSA scripting component.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a BMAP block is as follows:
+
+int bitmapSize; // size of this block including this header
+int bitmapType; // 'BMAP'
+int bitmapId;
+int filler; // always zero
+short something; // usually zero
+short something; // usually zero
+short something; // usually 1
+short something; // usually zero
+short bitmapTop; // top of the card rectangle
+short bitmapLeft; // left of the card rectangle
+short bitmapBottom; // bottom of the card rectangle
+short bitmapRight; // right of the card rectangle
+short maskBoundTop; // top of the mask bounding rectangle
+short maskBoundLeft; // left of the mask bounding rectangle
+short maskBoundBottom; // bottom of the mask bounding rectangle
+short maskBoundRight; // right of the mask bounding rectangle
+short imageBoundTop; // top of the image bounding rectangle
+short imageBoundLeft; // left of the image bounding rectangle
+short imageBoundBottom; // bottom of the image bounding rectangle
+short imageBoundRight; // right of the image bounding rectangle
+int something; // usually zero
+int something; // usually zero
+int maskSize; // size of the mask data
+int imageSize; // size of the image data
+byte[maskSize] mask; // the WOBA-compressed mask data
+byte[imageSize] image; // the WOBA-compressed image data
+
+The mask and image data is stored in a compressed image format that Rebecca Bettencourt christened
+Wrath of Bill Atkinson, or WOBA. The left side of the bounding rectangle must be rounded down and
+the right side rounded up to the nearest multiple of 32 before decompressing the data. The
+compressed data is a series of instructions of various lengths. The first byte of an instruction
+indicates how long the instruction is and what it does. The remaining bytes, if any, give data
+needed for that instruction. Rows can be encoded with a single instruction (with opcodes in the
+range 0x80-0x87) or a sequence of multiple instructions (with opcodes in the ranges of 0x00-0x7F
+and 0xC0-0xFF). Some operations change the manner in which rows are decoded (opcodes in the range
+0x88-0xBF). The end of a row comes either when the row has been filled (the number of bytes in a
+row, determined by the mask or image's bounding rect, has been reached) or when an instruction in
+the range 0x80-0xBF is encountered. Instructions are listed below.
+
+Opcode:		Instruction:		Meaning:
+0x00-0x7F	dz xx xx xx ...		z zero bytes followed by d data bytes
+0x80		80 xx xx xx ...		one row of uncompressed data
+0x81		81					one white row
+0x82		82					one black row
+0x83		83 xx				one row of a repeated byte of data
+0x84		84					one row of a repeated byte of data previously used
+									(Keep an array of eight bytes.
+									Initialize it with 0xAA55AA55AA55AA55.
+									When a 0x83 instruction is encountered, take the row number
+									modulo 8, and put the byte into that element of the array.
+									When a 0x84 instruction is encountered, take the row number
+									modulo 8, and use that element of the array to fill the row.)
+0x85		85					copy the previous row
+0x86		86					copy the row before the previous row
+0x87		87					copy the row before the row before the previous row
+0x88		88					dh = 16, dv = 0
+0x89		89					dh =  0, dv = 0
+0x8A		8A					dh =  0, dv = 1
+0x8B		8B					dh =  0, dv = 2
+0x8C		8C					dh =  1, dv = 0
+0x8D		8D					dh =  1, dv = 1
+0x8E		8E					dh =  2, dv = 2
+0x8F		8F					dh =  8, dv = 0
+									(Initially, dh = 0 and dv = 0. These instructions change
+									dh and dv for every row after the instruction. Every time
+									a row compressed using multiple operations is filled, the
+									following operations are performed:
+										Make a copy of the row.
+										If dh != 0, repeat until the end of the row:
+											Shift the copied row to the right dh bits.
+											XOR the copied row with the original row.
+										If dv != 0, XOR the copied row with the row dv rows back.
+										Copy the row back to the original.
+									Rows compressed with an 0x80-0x87 opcode are not affected.)
+0x90-0x9F						unused
+0xA0-0xBF	101nnnnn			repeat the next instruction n times
+0xC0-0xDF	110ddddd xx ...		d*8 bytes of data
+0xE0-0xFF	111zzzzz			z*16 bytes of zero
+
+If the mask data is provided, the decompressed mask data is used for the mask. If the mask data
+is not provided but the mask bounding rectangle is provided, the mask bounding rectangle is used
+for the mask. If neither the mask data nor the mask bounding rectangle are provided, the image
+itself is used for the mask.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a FREE block is as follows:
+
+int freeSize; // size of this block including this header
+int freeType; // 'FREE'
+int freeId; // always zero
+int filler; // always zero
+byte markerLength; // always 15
+byte[markerLength] marker; // always "Free Object    " (with 4 spaces at the end)
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of an STBL block is as follows:
+
+int styleTableSize; // size of this block including this header
+int styleTableType; // 'STBL'
+int styleTableId;
+int filler; // always zero
+int styleCount; // number of styles in the style table
+int nextStyleId; // the style ID to use for the next style
+style[styleCount] styles;
+	int styleId;
+	int something; // usually zero
+	int something; // usually zero
+	short textFont; // -1 if no change; otherwise, use the FTBL block to translate this to a font name
+	byte textStyle; // -1 if no change
+		bit 7 - group
+		bit 6 - extend
+		bit 5 - condense
+		bit 4 - shadow
+		bit 3 - outline
+		bit 2 - underline
+		bit 1 - italic
+		bit 0 - bold
+	byte textStyleChanged; // -1 if no change; otherwise zero
+	short textSize; // -1 if no change
+	short something; // usually zero
+	short something; // usually zero
+	short something; // usually zero
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of an FTBL block is as follows:
+
+int fontTableSize; // size of this block including this header
+int fontTableType; // 'FTBL'
+int fontTableId;
+int filler; // always zero
+int fontCount; // number of fonts in the font table
+int something;
+font[fontCount] fonts;
+	int fontId;
+	char * fontName;
+	short align;
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a PRNT block is as follows:
+
+int printSize; // size of this block including this header
+int printType; // 'PRNT'
+int printId;
+int filler; // always zero
+// - - - skip to offset 0x0030 - - - // We don't know the format of the skipped data yet.
+short pageSetupId; // ID number of the PRST block
+// - - - skip to offset 0x0134 - - - // We don't know the format of the skipped data yet.
+short templateCount; // number of report templates
+template[templateCount] templates;
+	int templateId;
+	byte templateNameLength;
+	byte[templateNameLength] templateName;
+	byte[36-templateNameLength-5] filler; // every element in the template array is exactly 36 bytes long
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a PRST block is as follows:
+
+int pageSetupSize; // size of this block including this header
+int pageSetupType; // 'PRST'
+int pageSetupId;
+int filler; // always zero
+short printerDriverVersion;
+short iDev;
+short vertResol;
+short horizResol;
+short pageTop;
+short pageLeft;
+short pageBottom;
+short pageRight;
+short paperTop;
+short paperLeft;
+short paperBottom;
+short paperRight;
+short printerDeviceNumber;
+short pageV;
+short pageH;
+byte port;
+byte feedType;
+short iDev;
+short vertResol;
+short horizResol;
+short pageTop;
+short pageLeft;
+short pageBottom;
+short pageRight;
+int reserved;
+int reserved;
+int reserved;
+int reserved;
+short firstPage;
+short lastPage;
+short numCopies;
+byte printingMethod;
+	0 - draft
+	1 - deferred
+byte reserved;
+int idleProc;
+int spoolFileName;
+short spoolFileVolume;
+byte spoolFileVersion;
+byte reserved;
+int reserved;
+int reserved;
+int reserved;
+int reserved;
+int reserved;
+int reserved;
+int reserved;
+int reserved;
+int reserved;
+int reserved;
+
+This is the same structure as is documented in Inside Macintosh: Imaging with QuickDraw: Printing
+Manager, except with the HyperCard block header attached to it.
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a PRFT block is as follows:
+
+int templateSize; // size of the block including this header
+int templateType; // 'PRFT'
+int templateId;
+int filler; // always zero
+byte units;
+	0 - centimeters
+	1 - millimeters
+	2 - inches
+	3 - points/pixels
+byte something;
+short marginTop;
+short marginLeft;
+short marginBottom;
+short marginRight;
+short spacingHeight;
+short spacingWidth;
+short cellHeight;
+short cellWidth;
+short flags;
+	bit 8 - left-to-right (as opposed to top-to-bottom)
+	bit 0 - dynamic height
+byte headerLength;
+byte[headerLength] header;
+	This is a Pascal string of the page header. The following control characters can be embedded
+	in the header string:
+	0x01 (control-A) - date
+	0x02 (control-B) - time
+	0x03 (control-C) - stack name
+	0x04 (control-D) - page number
+// - - - skip to offset 0x0124 - - - //
+short reportItemCount;
+reportItem[reportItemCount] reportItems;
+	short reportItemSize; // size of the report item including this header
+	short top; // top of the report item's bounding rectangle
+	short left; // left of the report item's bounding rectangle
+	short bottom; // bottom of the report item's bounding rectangle
+	short right; // right of the report item's bounding rectangle
+	short columnCount;
+	short flags;
+		bit 13 - changeHeight
+		bit 12 - changeStyle
+		bit 11 - changeSize
+		bit 10 - changeFont
+		bit 4 - invert
+		bit 3 - rightFrame
+		bit 2 - bottomFrame
+		bit 1 - leftFrame
+		bit 0 - topFrame
+	short textSize;
+	short textHeight;
+	byte textStyle;
+		bit 7 - group
+		bit 6 - extend
+		bit 5 - condense
+		bit 4 - shadow
+		bit 3 - outline
+		bit 2 - underline
+		bit 1 - italic
+		bit 0 - bold
+	byte reserved;
+	short textAlign;
+		0 - left
+		1 - center
+		-1 - right
+	char * contents;
+	char * textFont;
+	short align;
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+The format of a TAIL block is as follows:
+
+int tailSize; // size of the block including this header
+int tailType; // 'TAIL'
+int tailId; // always -1
+int filler; // always zero
+byte stringLength; // length of the tail string
+	19 - HyperCard 1.x
+	15 - HyperCard 2.x
+byte[stringLength] string; // the tail string
+	"That's all folks..." - HyperCard 1.x
+		(This is the closing line of Looney Tunes cartoons.)
+	"Nu är det slut…" - HyperCard 2.x
+		(This is the closing line of a Swedish children's show called Five Ants Are More Than
+		Four Elephants. It means "it's all used up," or that the show [or file] has ended.)
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+Also of interest are the HCcd and HCbg resoures in the stack's resource fork, which comprise
+AddColor's color database. The ID numbers of the HCcd and HCbg resources match the ID numbers
+of their corresponding cards and backgrounds.
+
+The format of an HCcd or HCbg resource is as follows:
+
+colorItem[] colorItems;
+	byte partType;
+		1 - button
+		2 - field
+		3 - rectangle
+		4 - PICT resource
+		5 - PICT file
+	IF PARTTYPE = 1:
+		short buttonId;
+		short bevel;
+		short red;
+		short green;
+		short blue;
+	IF PARTTYPE = 2:
+		short fieldId;
+		short bevel;
+		short red;
+		short green;
+		short blue;
+	IF PARTTYPE = 3:
+		short top;
+		short left;
+		short bottom;
+		short right;
+		short bevel;
+		short red;
+		short green;
+		short blue;
+	IF PARTTYPE = 4:
+		short top;
+		short left;
+		short bottom;
+		short right;
+		byte transparent;
+		byte resourceNameLength;
+		byte[resourceNameLength] resourceName;
+	IF PARTTYPE = 5:
+		short top;
+		short left;
+		short bottom;
+		short right;
+		byte transparent;
+		byte fileNameLength;
+		byte[fileNameLength] fileName;
+
+∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞∞
+
+Mysteries Still Locked Up in the HyperCard File Format
+
+What does the rest of the PRNT block do?
+What are the "something" fields used for?

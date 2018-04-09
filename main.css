@@ -1,0 +1,63 @@
+
+body {
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+.header {
+	padding-bottom: 10px;
+	border-bottom: 1px solid black;
+}
+
+#nav-title {
+	display: inline-block;
+	margin-top: 0;
+	margin-bottom: 0;
+	height: 3em;
+}
+
+#nav-title h3 {
+    color: black;
+    vertical-align: middle;
+    display: inline;
+}
+
+#nav-st {
+    display: inline-block;
+    vertical-align: bottom;
+    height: 2.6em;
+}
+
+.card {
+	border: 1px solid rgba(0, 0, 0, .3);
+	border-radius: .25rem;
+	margin-bottom: 1rem;
+	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.card-title {
+	display: inline;
+}
+
+.card-date {
+	display: block;
+	float: right;
+	margin: 0;
+	font-size: 1.5rem;
+	font-style: italic;
+}
+
+h3 {
+	color: black;
+}
+
+.card-content {
+	margin-top: .5rem;
+	clear: both;
+	border-top: 1px solid rgba(0, 0, 0, .3);
+	padding-top: 2px;
+}
+
+.card-block {
+	padding: 1rem;
+}
